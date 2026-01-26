@@ -1,0 +1,7 @@
+name: $name
+version: '$version'
+main: net.atlas.antiProjectileGhosting.AntiProjectileGhosting
+api-version: '$minecraft_version'
+authors:
+  - Alexandra-Myers
+load: STARTUP
