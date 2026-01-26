@@ -39,32 +39,31 @@ public class ProjectilePhaseListener implements Listener {
             Vec3 aVelocity = nmsProj.getDeltaMovement().add(0, nmsProj.getGravity(), 0);
             int functionalCuts = Math.toIntExact(Math.round(cuts * Math.max(1, aVelocity.length() / 2.5)));
             if (proj.isDead()
-                    || proj.isOnGround()
                     || (proj instanceof Trident trident && trident.hasDealtDamage())) {
                 iterator.remove();
                 continue;
             }
-            if (nmsProj.getDeltaMovement().length() <= 0)
+            if (nmsProj.getDeltaMovement().length() <= 0 || proj.isOnGround())
                 continue;
 
             AABB projCurrentBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 0));
             AABB projNextBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 1)).move(aVelocity);
             CraftPlayer playerShooter = proj.getShooter() instanceof CraftPlayer shooter ? shooter : null;
 
-            for (Player p : ((CraftWorld) world).getHandle().getEntitiesOfClass(Player.class,
+            for (Entity e : ((CraftWorld) world).getHandle().getEntitiesOfClass(Entity.class,
                     projCurrentBox.expandTowards(aVelocity).inflate(1.5),
                     target -> !target.isSpectator()
                             && (playerShooter == null || target != playerShooter.getHandle()))) {
-                AABB oldBox = p.getBoundingBoxAt(p.xOld, p.yOld, p.zOld);
-                AABB currentBox = p.getBoundingBox();
+                AABB oldBox = e.getBoundingBoxAt(e.xOld, e.yOld, e.zOld);
+                AABB currentBox = e.getBoundingBox();
                 for (int cut = 1; cut <= functionalCuts; cut++) {
                     float progress = (float) cut / functionalCuts;
                     BoundingBox arrowBox = lerpBoxes(progress, projCurrentBox, projNextBox);
-                    BoundingBox playerBox = lerpBoxes(progress, oldBox, currentBox);
+                    BoundingBox targetBox = lerpBoxes(progress, oldBox, currentBox);
 
-                    if (boxesOverlap(arrowBox, playerBox)) {
+                    if (boxesOverlap(arrowBox, targetBox) && nmsProj.canHitEntityPublic(e)) {
                         nmsProj.setPos(new Vec3(arrowBox.getCenterX(), arrowBox.getCenterY(), arrowBox.getCenterZ()));
-                        nmsProj.preHitTargetOrDeflectSelf(new EntityHitResult(p, nmsProj.position()));
+                        nmsProj.preHitTargetOrDeflectSelf(new EntityHitResult(e, nmsProj.position()));
                         nmsProj.needsSync = true;
                         break;
                     }
@@ -98,8 +97,8 @@ public class ProjectilePhaseListener implements Listener {
                         && proj.getBukkitEntity() instanceof Projectile bukkit
                         && projectiles.contains(bukkit)
                         && proj.isAlive()
-                        && proj.onGround()
-                        && (proj instanceof ThrownTrident trident && trident.dealtDamage))) {
+                        && !proj.onGround()
+                        && (!(proj instanceof ThrownTrident trident) || !trident.dealtDamage))) {
             Vec3 aVelocity = nmsProj.getDeltaMovement().subtract(0, nmsProj.getGravity(), 0);
 
             AABB projOldBox = nmsProj.getBoundingBoxAt(nmsProj.xOld, nmsProj.yOld, nmsProj.zOld).inflate(computeMargin(nmsProj, -1));
@@ -110,7 +109,7 @@ public class ProjectilePhaseListener implements Listener {
                 BoundingBox playerBox = lerpBoxes(progress, pCurrentBox, pNextBox);
                 BoundingBox arrowBox = lerpBoxes(progress, projOldBox, projCurrentBox);
 
-                if (boxesOverlap(arrowBox, playerBox)) {
+                if (boxesOverlap(arrowBox, playerBox) && nmsProj.canHitEntityPublic(nmsPlayer)) {
                     nmsProj.setPos(new Vec3(arrowBox.getCenterX(), arrowBox.getCenterY(), arrowBox.getCenterZ()));
                     nmsProj.preHitTargetOrDeflectSelf(new EntityHitResult(nmsPlayer, nmsProj.position()));
                     nmsProj.needsSync = true;
