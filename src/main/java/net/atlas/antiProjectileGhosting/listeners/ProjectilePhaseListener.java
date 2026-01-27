@@ -30,7 +30,7 @@ public class ProjectilePhaseListener implements Listener {
 
     @EventHandler
     public void onServerTickStart(ServerTickStartEvent event) {
-        for (Projectile proj : projectiles) {
+        for (Projectile proj : projectiles.stream().toList()) {
             World world = proj.getWorld();
 
             net.minecraft.world.entity.projectile.Projectile nmsProj = ((AbstractProjectile) proj).getHandle();
