@@ -30,20 +30,13 @@ public class ProjectilePhaseListener implements Listener {
 
     @EventHandler
     public void onServerTickStart(ServerTickStartEvent event) {
-        Iterator<Projectile> iterator = projectiles.iterator();
-        while (iterator.hasNext()) {
-            Projectile proj = iterator.next();
+        for (Projectile proj : projectiles) {
             World world = proj.getWorld();
 
             net.minecraft.world.entity.projectile.Projectile nmsProj = ((AbstractProjectile) proj).getHandle();
             Vec3 aVelocity = nmsProj.getDeltaMovement().add(0, nmsProj.getGravity(), 0);
             int functionalCuts = Math.toIntExact(Math.round(cuts * Math.max(1, aVelocity.length() / 2.5)));
-            if (proj.isDead()
-                    || (proj instanceof Trident trident && trident.hasDealtDamage())) {
-                iterator.remove();
-                continue;
-            }
-            if (nmsProj.getDeltaMovement().length() <= 0 || proj.isOnGround())
+            if (proj.isDead() || proj.isOnGround() || (proj instanceof Trident trident && trident.hasDealtDamage()) || nmsProj.getDeltaMovement().length() <= 0)
                 continue;
 
             AABB projCurrentBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 0));
