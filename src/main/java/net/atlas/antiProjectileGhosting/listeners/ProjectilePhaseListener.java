@@ -49,7 +49,7 @@ public class ProjectilePhaseListener implements Listener {
                     projCurrentBox.expandTowards(aVelocity).inflate(1.5),
                     target -> !target.isSpectator()
                             && (playerShooter == null || target != playerShooter.getHandle()))) {
-                Vec3 eVelocity = e.getDeltaMovement().add(0, e.getGravity(), 0);
+                Vec3 eVelocity = e.getKnownMovement().add(0, e.getGravity(), 0);
                 AABB oldBox = e.getBoundingBox().inflate(currentMargin);
                 AABB currentBox = e.getBoundingBox().inflate(nextMargin).move(eVelocity);
                 for (int cut = 0; cut <= functionalCuts; cut++) {
