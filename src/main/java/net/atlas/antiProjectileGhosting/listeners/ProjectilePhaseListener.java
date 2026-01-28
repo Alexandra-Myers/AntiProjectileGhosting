@@ -39,17 +39,20 @@ public class ProjectilePhaseListener implements Listener {
             if (proj.isDead() || proj.isOnGround() || (proj instanceof Trident trident && trident.hasDealtDamage()) || nmsProj.getDeltaMovement().length() <= 0)
                 continue;
 
-            AABB projCurrentBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 0));
-            AABB projNextBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 1)).move(aVelocity);
+            AABB projCurrentBox = nmsProj.getBoundingBox();
+            AABB projNextBox = nmsProj.getBoundingBox().move(aVelocity);
             CraftPlayer playerShooter = proj.getShooter() instanceof CraftPlayer shooter ? shooter : null;
+            float currentMargin = computeMargin(nmsProj, 0);
+            float nextMargin = computeMargin(nmsProj, 1);
 
             for (Entity e : ((CraftWorld) world).getHandle().getEntitiesOfClass(Entity.class,
                     projCurrentBox.expandTowards(aVelocity).inflate(1.5),
                     target -> !target.isSpectator()
                             && (playerShooter == null || target != playerShooter.getHandle()))) {
-                AABB oldBox = e.getBoundingBoxAt(e.xOld, e.yOld, e.zOld);
-                AABB currentBox = e.getBoundingBox();
-                for (int cut = 1; cut <= functionalCuts; cut++) {
+                Vec3 eVelocity = e.getDeltaMovement().add(0, e.getGravity(), 0);
+                AABB oldBox = e.getBoundingBox().inflate(currentMargin);
+                AABB currentBox = e.getBoundingBox().inflate(nextMargin).move(eVelocity);
+                for (int cut = 0; cut <= functionalCuts; cut++) {
                     float progress = (float) cut / functionalCuts;
                     BoundingBox arrowBox = lerpBoxes(progress, projCurrentBox, projNextBox);
                     BoundingBox targetBox = lerpBoxes(progress, oldBox, currentBox);
@@ -93,13 +96,13 @@ public class ProjectilePhaseListener implements Listener {
                         && (!(proj instanceof ThrownTrident trident) || !trident.dealtDamage))) {
             Vec3 aVelocity = nmsProj.getDeltaMovement().subtract(0, nmsProj.getGravity(), 0);
 
-            AABB projOldBox = nmsProj.getBoundingBoxAt(nmsProj.xOld, nmsProj.yOld, nmsProj.zOld).inflate(computeMargin(nmsProj, -1));
-            AABB projCurrentBox = nmsProj.getBoundingBox().inflate(computeMargin(nmsProj, 0));
+            AABB projCurrentBox = nmsProj.getBoundingBox();
+            AABB projNextBox = nmsProj.getBoundingBox().move(aVelocity);
             int functionalCuts = Math.toIntExact(Math.round(cuts * Math.max(1, aVelocity.length() / 2.5)));
-            for (int cut = 1; cut <= functionalCuts; cut++) {
+            for (int cut = 0; cut <= functionalCuts; cut++) {
                 float progress = (float) cut / functionalCuts;
-                BoundingBox playerBox = lerpBoxes(progress, pCurrentBox, pNextBox);
-                BoundingBox arrowBox = lerpBoxes(progress, projOldBox, projCurrentBox);
+                BoundingBox playerBox = lerpBoxes(progress, pCurrentBox.inflate(computeMargin(nmsProj, 0)), pNextBox.inflate(computeMargin(nmsProj, 1)));
+                BoundingBox arrowBox = lerpBoxes(progress, projCurrentBox, projNextBox);
 
                 if (boxesOverlap(arrowBox, playerBox) && nmsProj.canHitEntityPublic(nmsPlayer)) {
                     nmsProj.preHitTargetOrDeflectSelf(new EntityHitResult(nmsPlayer, nmsProj.position()));
