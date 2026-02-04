@@ -25,7 +25,7 @@ import org.bukkit.util.Vector;
 import java.util.*;
 
 public class ProjectilePhaseListener implements Listener {
-    private static final Set<Projectile> projectiles = new HashSet<>();
+    private static final Set<Projectile> projectiles = Collections.newSetFromMap(new WeakHashMap<>());
     private static final int cuts = 6;
 
     @EventHandler
