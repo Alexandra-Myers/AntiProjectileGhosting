@@ -1,0 +1,4 @@
+# If a projectile's hitbox margin should scale up to 0.3 over time.
+# Note: This would be true in 1.21.6+ by default
+# Default: false
+timeScaledHitboxMargin: false

@@ -1,6 +1,7 @@
 package net.atlas.antiProjectileGhosting.listeners;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import net.atlas.antiProjectileGhosting.AntiProjectileGhosting;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -133,6 +134,7 @@ public class ProjectilePhaseListener implements Listener {
     }
 
     public static float computeMargin(Entity entity, int tickOffset) {
+        if (!AntiProjectileGhosting.timeScaledHitboxMargin) return 0.3F;
         return Math.max(0.0F, Math.min(0.3F, (float)((entity.tickCount + tickOffset) - 2) / 20.0F));
     }
 }

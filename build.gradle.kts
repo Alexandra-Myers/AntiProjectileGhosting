@@ -34,7 +34,7 @@ tasks {
         minecraftVersion(project.property("minecraft_version")!!.toString())
     }
 }
-var resourceTargets = listOf("paper-plugin.yml")
+var resourceTargets = listOf("plugin.yml")
 var replaceProperties = mapOf(Pair("name", project.property("name")), Pair("version", project.property("main_version")), Pair("minecraft_version", project.property("minecraft_version")))
 tasks.processResources {
     inputs.property("name", project.property("name"))
